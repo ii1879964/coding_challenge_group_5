@@ -1,5 +1,5 @@
 import mysql.connector
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, Response
 from flask import jsonify, make_response, request
 from flask_cors import CORS
 from mysql.connector import Error
@@ -130,17 +130,9 @@ def query_persisted_deals(instrument):
         conn.close()
 
 
-# @app.route('/deals/stream')
-# def get_real_time_deals():
-#     rdd = RandomDealData()
-#     instrList = rdd.createInstrumentList()
-#
-#     def eventStream():
-#         while True:
-#             # nonlocal instrList
-#              yield 'data:{}\n\n'.format(rdd.createRandomData())
-#
-#     return Response(eventStream(), status=200, mimetype="text/event-stream")
+@app.route('/deals/stream')
+def get_real_time_deals():
+    return Response(deal_stream, status=200, mimetype="text/event-stream")
 
 @app.route('/instruments', methods=['GET'])
 def get_instruments_names():
@@ -292,9 +284,29 @@ def get_effective_profit_loss():
         conn.close()
 
 
+def deal_generator(rdd):
+    while True:
+        next = rdd.createRandomData()
+        # TODO: persist
+        print("Persisting {}".format(next))
+        # nonlocal instrList
+        yield 'data:{}\n\n'.format(next)
+
+
 def bootapp():
     app.run(port=8090, threaded=True, host=('0.0.0.0'))
 
 
+class RandomDealData(object):
+    def createInstrumentList(self):
+        pass
+    def createRandomData(self):
+        return 42
+
+
 if __name__ == '__main__':
+    rdd = RandomDealData()
+    instrList = rdd.createInstrumentList()
+    global deal_stream
+    deal_stream = deal_generator(rdd)
     bootapp()
