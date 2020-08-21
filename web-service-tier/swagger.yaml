@@ -1,0 +1,272 @@
+swagger: "2.0"
+info:
+  description: "This is a web-server serving web-service-tier as gateway before frontend"
+  version: "1.0.0"
+  title: "seb-service-tier"
+host: "localhost:8080"
+basePath: "/web-service"
+tags:
+- name: "probes"
+  description: "Access to database checks"
+- name: "deals"
+  description: "Operations for dealer"
+- name: "instruments"
+  description: "Instrument info"
+- name: "balance"
+  description: "Profit/loss info"
+schemes:
+- "http"
+paths:
+  /connection_check:
+    get:
+      tags:
+      - "probes"
+      summary: "Check that a database is online"
+      description: ""
+      operationId: "connection_check"
+      responses:
+        "200":
+          description: "Connection is OK"
+        "500":
+          description: "Connection lost!"
+  /login_check:
+    get:
+      tags:
+      - "probes"
+      summary: "Check that supplied credentials are valid"
+      description: ""
+      operationId: "login_check"
+      consumes:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "login/password pair"
+        required: true
+        schema:
+          $ref: "#/definitions/Credentials"
+      responses:
+        "200":
+          description: "Credentials are OK"
+        "401":
+          description: "Unauthorized"
+  /deals:
+    get:
+      tags:
+      - "deals"
+      summary: "Query deals from database"
+      description: ""
+      operationId: "get_deals_by_time"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "startingTime"
+        in: "query"
+        description: "starting time filter of deals"
+        required: true
+        type: "string"
+      - name: "endingTime"
+        in: "query"
+        description: "ending time filter of deals"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Deal"
+        "401":
+          description: "Unauthorized"
+  /deals/stream:
+    get:
+      tags:
+      - "deals"
+      summary: "Stream real-time deals"
+      description: ""
+      operationId: "get_real_time_deals"
+      produces:
+      - "text/event-stream"
+      responses:
+        "200":
+          description: "successful operation"
+        "401":
+          description: "Unauthorized"
+  /instruments:
+    get:
+      tags:
+      - "instruments"
+      summary: "Query instruments from database"
+      description: ""
+      operationId: "get_instruments_names"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Deal"
+        "401":
+          description: "Unauthorized"
+  /instruments/average_price:
+    get:
+      tags:
+      - "instruments"
+      summary: "Query instruments average prices from database"
+      description: ""
+      operationId: "get_instruments_average_price"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "instrument array"
+        required: true
+        schema:
+          type: "array"
+          items:
+            $ref: "#/definitions/Instrument"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/InstrumentPrices"
+        "401":
+          description: "Unauthorized"
+  /instruments/ending_position:
+    get:
+      tags:
+      - "instruments"
+      summary: "Query instruments ending positions from database"
+      description: ""
+      operationId: "get_instruments_ending_position"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "instrument array"
+        required: true
+        schema:
+          type: "array"
+          items:
+            $ref: "#/definitions/Instrument"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/InstrumentPositions"
+        "401":
+          description: "Unauthorized"
+  /balance/realized:
+    get:
+      tags:
+      - "balance"
+      summary: "Query realized profit/loss from database"
+      description: ""
+      operationId: "get_realized_profit_loss"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: '#/definitions/Balance'
+        "401":
+          description: "Unauthorized"
+  /balance/effective:
+    get:
+      tags:
+      - "balance"
+      summary: "Query effective profit/loss from database"
+      description: ""
+      operationId: "get_effective_profit_loss"
+      produces:
+      - "application/json"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            $ref: '#/definitions/Balance'
+        "401":
+          description: "Unauthorized"
+definitions:
+  Credentials:
+    type: "object"
+    properties:
+      login:
+        type: "string"
+      password:
+        type: "string"
+  Deal:
+    type: "object"
+    properties:
+      instrumentName:
+        type: "string"
+      cpty:
+        type: "string"
+      price:
+        type: "string"
+      type:
+        type: "string"
+      quantity:
+        type: "string"
+      time:
+        type: "string"
+  Instrument:
+    type: "string"
+    enum:
+      - Astronomica
+      - Borealis
+      - Celestial
+      - Deuteronic
+      - Eclipse
+      - Floral
+      - Galactia
+      - Heliosphere
+      - Interstella
+      - Jupiter
+      - Koronis
+      - Lunatic
+  InstrumentPrices:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        # $ref: '#/definitions/Instrument'
+      price:
+        type: "object"
+        properties:
+          buy:
+            type: "number"
+          sell:
+            type: "number"
+  InstrumentPositions:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+        # $ref: '#/definitions/Instrument'
+      position:
+        type: "object"
+        properties:
+          buy:
+            type: "string"
+          sell:
+            type: "string"
+  Balance:
+    type: "object"
+    properties:
+      profit:
+        type: "number"
+      loss:
+        type: "number"
+      sum:
+        type: "number"
