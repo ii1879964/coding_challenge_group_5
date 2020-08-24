@@ -1,4 +1,5 @@
 import mysql.connector
+import json
 from flask import Flask, Blueprint, Response
 from flask import jsonify, make_response, request
 from flask_cors import CORS
@@ -288,14 +289,41 @@ def get_effective_profit_loss():
 def stream():
     return Response(deal_stream, status=200, mimetype="text/event-stream")
 
-def deal_generator(rdd):
-    instrList = rdd.createInstrumentList()
+
+def persist_data(nextId, next):
+    try:
+        conn = mysql.connector.connect(host='localhost',
+                                       database='db_grad_cs_1917',
+                                       user='root',
+                                       password='ppp')
+
+        if conn.is_connected():
+            cursor = conn.cursor()
+            cursor.execute(f"INSERT into deal "
+                           f"VALUES  ({nextId}, "
+                           f"'{next['time']}', "
+                            f"(SELECT counterparty_id FROM counterparty WHERE counterparty_name = '{next['cpty']}'), "
+                            f"(SELECT instrument_id FROM instrument WHERE instrument_name = '{next['instrumentName']}'), " 
+                            f"'{next['type']}', "
+                            f"{next['price']}, "
+                            f"{next['quantity']})")
+            conn.commit()
+    except Error as e:
+        data = {'message': 'Not connected', 'code': 'Internal Server Error'}
+        #return (jsonify(data), 500)
+        print(e)
+    finally:
+        cursor.close()
+        conn.close()
+
+def deal_generator(rdd, instrList):
     while True:
-        next = rdd.createRandomData(instrList)
-        # TODO: persist
+        nextId, next = rdd.createRandomData(instrList)
+        persist_data(nextId, next)
         #print("Persisting {}".format(next))
         # nonlocal instrList
-        yield 'data:{}\n\n'.format(next)
+
+        yield 'data:{}\n\n'.format(json.dumps(next))
 
 
 
@@ -307,6 +335,7 @@ def bootapp():
 
 if __name__ == '__main__':
     rdd = RandomDealData()
+    instrList = rdd.createInstrumentList()
     global deal_stream
-    deal_stream = deal_generator(rdd)
+    deal_stream = deal_generator(rdd, instrList)
     bootapp()
