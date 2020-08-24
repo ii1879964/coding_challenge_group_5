@@ -1,8 +1,10 @@
 import mysql.connector
+import json
 from flask import Flask, Blueprint, Response
 from flask import jsonify, make_response, request
 from flask_cors import CORS
 from mysql.connector import Error
+from RandomDealData import *
 
 app = Flask(__name__)
 # app.register_blueprint(sse, url_prefix='/stream')
@@ -278,31 +280,57 @@ def get_effective_profit_loss():
         cursor.close()
         conn.close()
 
+@app.route('/streamTest')
+def stream():
+    return Response(deal_stream, status=200, mimetype="text/event-stream")
 
-def deal_generator(rdd):
+
+def persist_data(nextId, next):
+    try:
+        conn = mysql.connector.connect(host='localhost',
+                                       database='db_grad_cs_1917',
+                                       user='root',
+                                       password='ppp')
+
+        if conn.is_connected():
+            cursor = conn.cursor()
+            cursor.execute(f"INSERT into deal "
+                           f"VALUES  ({nextId}, "
+                           f"'{next['time']}', "
+                            f"(SELECT counterparty_id FROM counterparty WHERE counterparty_name = '{next['cpty']}'), "
+                            f"(SELECT instrument_id FROM instrument WHERE instrument_name = '{next['instrumentName']}'), " 
+                            f"'{next['type']}', "
+                            f"{next['price']}, "
+                            f"{next['quantity']})")
+            conn.commit()
+    except Error as e:
+        data = {'message': 'Not connected', 'code': 'Internal Server Error'}
+        #return (jsonify(data), 500)
+        print(e)
+    finally:
+        cursor.close()
+        conn.close()
+
+def deal_generator(rdd, instrList):
     while True:
-        next = rdd.createRandomData()
-        # TODO: persist
-        print("Persisting {}".format(next))
+        nextId, next = rdd.createRandomData(instrList)
+        persist_data(nextId, next)
+        #print("Persisting {}".format(next))
         # nonlocal instrList
-        yield 'data:{}\n\n'.format(next)
+
+        yield 'data:{}\n\n'.format(json.dumps(next))
+
+
 
 
 def bootapp():
-    app.debug = True
-    app.run(port=8090, threaded=True, host=('0.0.0.0'))
+    app.run(port=8090, threaded=True, host=('localhost'))
 
-
-class RandomDealData(object):
-    def createInstrumentList(self):
-        pass
-    def createRandomData(self):
-        return 42
 
 
 if __name__ == '__main__':
     rdd = RandomDealData()
     instrList = rdd.createInstrumentList()
     global deal_stream
-    deal_stream = deal_generator(rdd)
+    deal_stream = deal_generator(rdd, instrList)
     bootapp()
