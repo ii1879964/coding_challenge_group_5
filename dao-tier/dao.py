@@ -116,8 +116,7 @@ def query_persisted_deals(instrument):
                 "instrument  on deal.deal_instrument_id=instrument.instrument_id join "
                 "counterparty on deal.deal_counterparty_id=counterparty.counterparty_id "
                 "WHERE "
-                "instrument_name=%s",
-                (instrument))
+                f"instrument_name='{instrument}'")
             result = [dict(zip(cursor.column_names, row)) for row in cursor.fetchall()]
             return make_response(jsonify(result), 200)
 
@@ -146,7 +145,7 @@ def get_instruments_names():
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT instrument_name FROM instrument")
-            result = [row for row in cursor.fetchall()]
+            result = [row[0] for row in cursor.fetchall()]
             return make_response(jsonify(result), 200)
 
     except Error as e:
