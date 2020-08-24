@@ -3,6 +3,7 @@ from flask import Flask, Blueprint, Response
 from flask import jsonify, make_response, request
 from flask_cors import CORS
 from mysql.connector import Error
+from RandomDealData import *
 
 app = Flask(__name__)
 # app.register_blueprint(sse, url_prefix='/stream')
@@ -283,30 +284,29 @@ def get_effective_profit_loss():
         cursor.close()
         conn.close()
 
+@app.route('/streamTest')        
+def stream():
+    return Response(deal_stream, status=200, mimetype="text/event-stream")
 
 def deal_generator(rdd):
+    instrList = rdd.createInstrumentList()
     while True:
-        next = rdd.createRandomData()
+        next = rdd.createRandomData(instrList)
         # TODO: persist
-        print("Persisting {}".format(next))
+        #print("Persisting {}".format(next))
         # nonlocal instrList
         yield 'data:{}\n\n'.format(next)
 
 
+
+
 def bootapp():
-    app.run(port=8090, threaded=True, host=('0.0.0.0'))
+    app.run(port=8090, threaded=True, host=('localhost'))
 
-
-class RandomDealData(object):
-    def createInstrumentList(self):
-        pass
-    def createRandomData(self):
-        return 42
 
 
 if __name__ == '__main__':
     rdd = RandomDealData()
-    instrList = rdd.createInstrumentList()
     global deal_stream
     deal_stream = deal_generator(rdd)
     bootapp()
