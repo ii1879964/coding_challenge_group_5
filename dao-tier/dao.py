@@ -16,7 +16,7 @@ def connection_check():
     """ Connect to MySQL database """
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
         if conn.is_connected():
@@ -35,15 +35,15 @@ def connection_check():
 def login_check():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
         if conn.is_connected():
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT * FROM users where user_id=%s and user_pwd=%s",
-                (request.json.get('login'), request.json.get('password')))
+                f"SELECT * FROM users where user_id='{request.json.get('login')}' and user_pwd='{request.json.get('password')}'")
+            cursor.fetchall()
             if cursor.rowcount == 1:
                 data = {'message': 'Credentials valid', 'code': 'SUCCESS'}
                 return make_response(jsonify(data), 200)
@@ -64,7 +64,7 @@ def login_check():
 def get_persisted_deals():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -99,7 +99,7 @@ def get_persisted_deals():
 def query_persisted_deals(instrument):
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -118,8 +118,7 @@ def query_persisted_deals(instrument):
                 "instrument  on deal.deal_instrument_id=instrument.instrument_id join "
                 "counterparty on deal.deal_counterparty_id=counterparty.counterparty_id "
                 "WHERE "
-                "instrument_name=%s",
-                (instrument))
+                f"instrument_name='{instrument}'")
             result = [dict(zip(cursor.column_names, row)) for row in cursor.fetchall()]
             return make_response(jsonify(result), 200)
 
@@ -132,7 +131,7 @@ def query_persisted_deals(instrument):
         conn.close()
 
 
-@app.route('/deals/stream')
+@app.route('/deals/stream', methods=['GET'])
 def get_real_time_deals():
     return Response(deal_stream, status=200, mimetype="text/event-stream")
 
@@ -140,7 +139,7 @@ def get_real_time_deals():
 def get_instruments_names():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -148,7 +147,7 @@ def get_instruments_names():
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT instrument_name FROM instrument")
-            result = [row for row in cursor.fetchall()]
+            result = [row[0] for row in cursor.fetchall()]
             return make_response(jsonify(result), 200)
 
     except Error as e:
@@ -164,7 +163,7 @@ def get_instruments_names():
 def get_instruments_average_price():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -177,20 +176,18 @@ def get_instruments_average_price():
                 "avg(deal_price) "
                 "FROM "
                 "deal join "
-                "instrument on deal.deal_instrument_id=instrument.instrument_id join "
+                "instrument on deal.deal_instrument_id=instrument.instrument_id "
                 "GROUP BY "
                 "instrument_name,"
                 "deal_type "
                 "HAVING "
-                "instrument_name IN (%s)",
-                (','.join(request.json)))
+                "instrument_name IN (SELECT instrument_name FROM instrument)")
             instrument_prices = {}
             for row in cursor.fetchall():
                 if row[0] not in instrument_prices:
                     instrument_prices[row[0]] = {"B": 0, "S": 0}
-                else:
-                    instrument_prices[row[0]][row[1]] = row[2]
-            result = [ {"name": name , "prices": { "buy": prices["B"], "sell": prices["S"]}} for name, prices in instrument_prices ]
+                instrument_prices[row[0]][row[1]] = row[2]
+            result = [ {"name": name , "prices": { "buy": prices["B"], "sell": prices["S"]}} for name, prices in instrument_prices.items()]
             return make_response(jsonify(result), 200)
 
     except Error as e:
@@ -206,7 +203,7 @@ def get_instruments_average_price():
 def get_instruments_ending_position():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -219,20 +216,18 @@ def get_instruments_ending_position():
                 "sum(deal_quantity) "
                 "FROM "
                 "deal join "
-                "instrument on deal.deal_instrument_id=instrument.instrument_id join "
+                "instrument on deal.deal_instrument_id=instrument.instrument_id "
                 "GROUP BY "
                 "instrument_name,"
                 "deal_type "
                 "HAVING "
-                "instrument_name IN (%s)",
-                (','.join(request.json)))
+                "instrument_name IN (SELECT instrument_name FROM instrument)")
             instrument_positions = {}
             for row in cursor.fetchall():
                 if row[0] not in instrument_positions:
                     instrument_positions[row[0]] = {"B": 0, "S": 0}
-                else:
-                    instrument_positions[row[0]][row[1]] = row[2]
-            result = [ {"name": name , "prices": { "buy": positions["B"], "sell": positions["S"]}} for name, positions in instrument_positions ]
+                instrument_positions[row[0]][row[1]] = row[2]
+            result = [ {"name": name , "prices": { "buy": positions["B"], "sell": positions["S"]}} for name, positions in instrument_positions.items() ]
             return make_response(jsonify(result), 200)
 
     except Error as e:
@@ -248,7 +243,7 @@ def get_instruments_ending_position():
 def get_realized_profit_loss():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -269,7 +264,7 @@ def get_realized_profit_loss():
 def get_effective_profit_loss():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -285,7 +280,7 @@ def get_effective_profit_loss():
         cursor.close()
         conn.close()
 
-@app.route('/streamTest')        
+@app.route('/streamTest')
 def stream():
     return Response(deal_stream, status=200, mimetype="text/event-stream")
 
