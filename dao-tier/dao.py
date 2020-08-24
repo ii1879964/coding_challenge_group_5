@@ -129,7 +129,7 @@ def query_persisted_deals(instrument):
         conn.close()
 
 
-@app.route('/deals/stream')
+@app.route('/deals/stream', methods=['GET'])
 def get_real_time_deals():
     return Response(deal_stream, status=200, mimetype="text/event-stream")
 
@@ -174,20 +174,18 @@ def get_instruments_average_price():
                 "avg(deal_price) "
                 "FROM "
                 "deal join "
-                "instrument on deal.deal_instrument_id=instrument.instrument_id join "
+                "instrument on deal.deal_instrument_id=instrument.instrument_id "
                 "GROUP BY "
                 "instrument_name,"
                 "deal_type "
                 "HAVING "
-                "instrument_name IN (%s)",
-                (','.join(request.json)))
+                "instrument_name IN (SELECT instrument_name FROM instrument)")
             instrument_prices = {}
             for row in cursor.fetchall():
                 if row[0] not in instrument_prices:
                     instrument_prices[row[0]] = {"B": 0, "S": 0}
-                else:
-                    instrument_prices[row[0]][row[1]] = row[2]
-            result = [ {"name": name , "prices": { "buy": prices["B"], "sell": prices["S"]}} for name, prices in instrument_prices ]
+                instrument_prices[row[0]][row[1]] = row[2]
+            result = [ {"name": name , "prices": { "buy": prices["B"], "sell": prices["S"]}} for name, prices in instrument_prices.items()]
             return make_response(jsonify(result), 200)
 
     except Error as e:
@@ -216,20 +214,18 @@ def get_instruments_ending_position():
                 "sum(deal_quantity) "
                 "FROM "
                 "deal join "
-                "instrument on deal.deal_instrument_id=instrument.instrument_id join "
+                "instrument on deal.deal_instrument_id=instrument.instrument_id "
                 "GROUP BY "
                 "instrument_name,"
                 "deal_type "
                 "HAVING "
-                "instrument_name IN (%s)",
-                (','.join(request.json)))
+                "instrument_name IN (SELECT instrument_name FROM instrument)")
             instrument_positions = {}
             for row in cursor.fetchall():
                 if row[0] not in instrument_positions:
                     instrument_positions[row[0]] = {"B": 0, "S": 0}
-                else:
-                    instrument_positions[row[0]][row[1]] = row[2]
-            result = [ {"name": name , "prices": { "buy": positions["B"], "sell": positions["S"]}} for name, positions in instrument_positions ]
+                instrument_positions[row[0]][row[1]] = row[2]
+            result = [ {"name": name , "prices": { "buy": positions["B"], "sell": positions["S"]}} for name, positions in instrument_positions.items() ]
             return make_response(jsonify(result), 200)
 
     except Error as e:
