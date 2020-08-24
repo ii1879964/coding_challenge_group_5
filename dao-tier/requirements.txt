@@ -4,4 +4,3 @@ mysql-connector-python==8.0.15
 numpy
 flask_sse
 requests
-mysql-connec

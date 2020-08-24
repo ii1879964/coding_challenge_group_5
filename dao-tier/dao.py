@@ -14,7 +14,7 @@ def connection_check():
     """ Connect to MySQL database """
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
         if conn.is_connected():
@@ -33,15 +33,15 @@ def connection_check():
 def login_check():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
         if conn.is_connected():
             cursor = conn.cursor()
             cursor.execute(
-                "SELECT * FROM users where user_id=%s and user_pwd=%s",
-                (request.json.get('login'), request.json.get('password')))
+                f"SELECT * FROM users where user_id='{request.json.get('login')}' and user_pwd='{request.json.get('password')}'")
+            cursor.fetchall()
             if cursor.rowcount == 1:
                 data = {'message': 'Credentials valid', 'code': 'SUCCESS'}
                 return make_response(jsonify(data), 200)
@@ -62,7 +62,7 @@ def login_check():
 def get_persisted_deals():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -97,7 +97,7 @@ def get_persisted_deals():
 def query_persisted_deals(instrument):
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -138,7 +138,7 @@ def get_real_time_deals():
 def get_instruments_names():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -162,7 +162,7 @@ def get_instruments_names():
 def get_instruments_average_price():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -204,7 +204,7 @@ def get_instruments_average_price():
 def get_instruments_ending_position():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -246,7 +246,7 @@ def get_instruments_ending_position():
 def get_realized_profit_loss():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -267,7 +267,7 @@ def get_realized_profit_loss():
 def get_effective_profit_loss():
     try:
         conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad',
+                                       database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
 
@@ -294,6 +294,7 @@ def deal_generator(rdd):
 
 
 def bootapp():
+    app.debug = True
     app.run(port=8090, threaded=True, host=('0.0.0.0'))
 
 
