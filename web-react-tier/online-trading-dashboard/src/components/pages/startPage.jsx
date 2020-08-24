@@ -2,7 +2,7 @@ import React from 'react';
 import { Jumbotron, Container, Col, Button } from 'reactstrap';
 
 
-const startPage = (props) => {
+const StartPage = (props) => {
     return (
      <div>
       <Jumbotron fluid>
@@ -19,4 +19,4 @@ const startPage = (props) => {
     );
 };
 
-export default startPage;
+export default StartPage;
