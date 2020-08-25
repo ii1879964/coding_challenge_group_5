@@ -18,9 +18,12 @@ app = Flask(__name__)
 CORS(app)
 
 db_host = os.getenv('DB_HOST','localhost')
+
 deals_dao = DealsDAO(host=db_host)
 probes_dao = ProbesDAO(host=db_host)
 instruments_dao = InstrumentsDAO(host=db_host)
+
+rdd = RandomDealData()
 
 
 @app.route('/connection_check', methods=["GET"])
@@ -72,7 +75,14 @@ def query_persisted_deals(instrument):
 
 @app.route('/deals/stream', methods=['GET'])
 def get_real_time_deals():
-    return Response(deal_stream, status=200, mimetype="text/event-stream")
+
+    def deal_generator():
+        for nextId, next in rdd.deal_generator():
+            BalanceDAO.recount_profit_loss(next)
+            deals_dao.persist_data(nextId, next)
+            yield 'data:{}\n\n'.format(json.dumps(next))
+
+    return Response(deal_generator(), status=200, mimetype="text/event-stream")
 
 @app.route('/instruments', methods=['GET'])
 def get_instruments_names():
@@ -118,55 +128,12 @@ def get_effective_profit_loss():
     try:
         return make_response(jsonify(BalanceDAO.get_effective_balance()),200)
     except Error as e:
-        data = {'message': 'Not connected', 'code': 'Internal Server Error'}
-        return make_response(jsonify(data), 500)
-
-@app.route('/streamTest')
-def stream():
-    return Response(deal_stream, status=200, mimetype="text/event-stream")
-
-
-def persist_data(nextId, next):
-    try:
-        conn = mysql.connector.connect(host=db_host,
-                                       database='db_grad_cs_1917',
-                                       user='root',
-                                       password='ppp')
-
-        if conn.is_connected():
-            cursor = conn.cursor()
-            cursor.execute(f"INSERT into deal "
-                           f"VALUES  ({nextId}, "
-                           f"'{next['time']}', "
-                            f"(SELECT counterparty_id FROM counterparty WHERE counterparty_name = '{next['cpty']}'), "
-                            f"(SELECT instrument_id FROM instrument WHERE instrument_name = '{next['instrumentName']}'), " 
-                            f"'{next['type']}', "
-                            f"{next['price']}, "
-                            f"{next['quantity']})")
-            conn.commit()
-    except Error as e:
         data = {'message': e, 'code': 'Internal Server Error'}
-        #return (jsonify(data), 500)
-        print(e)
-    finally:
-        cursor.close()
-        conn.close()
-
-def deal_generator(rdd, instrList):
-    while True:
-        nextId, next = rdd.createRandomData(instrList)
-        BalanceDAO.recount_profit_loss(next)
-        persist_data(nextId, next)
-        yield 'data:{}\n\n'.format(json.dumps(next))
+        return make_response(jsonify(data), 500)
 
 def bootapp():
     app.run(port=8090, threaded=True, host=('0.0.0.0'))
 
 
-
 if __name__ == '__main__':
-    rdd = RandomDealData()
-    instrList = rdd.createInstrumentList()
-    global deal_stream
-    deal_stream = deal_generator(rdd, instrList)
     bootapp()

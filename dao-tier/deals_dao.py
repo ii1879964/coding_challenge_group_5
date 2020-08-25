@@ -1,4 +1,5 @@
 import mysql
+from mysql.connector import Error
 
 
 class DealsDAO(object):
@@ -58,6 +59,30 @@ class DealsDAO(object):
                 "WHERE "
                 f"instrument_name='{instrument}'")
             return [dict(zip(cursor.column_names, row)) for row in cursor.fetchall()]
+        finally:
+            cursor.close()
+            conn.close()
+
+    def persist_data(self, nextId, next):
+        try:
+            conn = mysql.connector.connect(host=self.host,
+                                           database=self.database,
+                                           user=self.user,
+                                           password=self.password)
+
+            if conn.is_connected():
+                cursor = conn.cursor()
+                cursor.execute(f"INSERT into deal "
+                               f"VALUES  ({nextId}, "
+                               f"'{next['time']}', "
+                               f"(SELECT counterparty_id FROM counterparty WHERE counterparty_name = '{next['cpty']}'), "
+                               f"(SELECT instrument_id FROM instrument WHERE instrument_name = '{next['instrumentName']}'), "
+                               f"'{next['type']}', "
+                               f"{next['price']}, "
+                               f"{next['quantity']})")
+                conn.commit()
+        except Error as e:
+            print(e)
         finally:
             cursor.close()
             conn.close()
