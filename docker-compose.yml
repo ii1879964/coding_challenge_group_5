@@ -1,0 +1,23 @@
+version: '3'
+services:
+  web-tier:
+    build: web-service-tier
+    ports:
+      - "8100:8100"
+    environment:
+      DAO_HOST: dao-tier
+      DAO_PORT: 8090
+  dao-tier:
+    build: dao-tier
+    ports:
+      - "8090:8090"
+    environment:
+      DB_HOST: db
+  db:
+    image: "mysql:latest"
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ppp
+    volumes:
+     - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
