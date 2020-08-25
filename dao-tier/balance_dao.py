@@ -2,7 +2,6 @@ import mysql
 
 
 class BalanceDAO(object):
-
     balance_per_instrument_name = {}
     quantity_of_shares = {}
     current_price = {}

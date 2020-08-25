@@ -21,7 +21,7 @@ db_host = os.getenv('DB_HOST','localhost')
 deals_dao = DealsDAO(host=db_host)
 probes_dao = ProbesDAO(host=db_host)
 instruments_dao = InstrumentsDAO(host=db_host)
-balance_dao = BalanceDAO(host=db_host)
+balance_dao = BalanceDAO()
 
 
 @app.route('/connection_check', methods=["GET"])
