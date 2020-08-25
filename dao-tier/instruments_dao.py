@@ -6,22 +6,27 @@ class InstrumentsDAO(object):
                  host='localhost',
                  database='db_grad_cs_1917',
                  user='root',
-                 password='ppp'):
+                 password='ppp',
+                 port='3306'):
         self.host = host
         self.database = database
         self.user = user
         self.password = password
+        self.port = port
 
     def get_all_instrument_names(self):
         try:
             conn = mysql.connector.connect(host=self.host,
                                            database=self.database,
                                            user=self.user,
-                                           password=self.password)
+                                           password=self.password,
+                                           port=self.port)
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT instrument_name FROM instrument")
             return [row[0] for row in cursor.fetchall()]
+        except Exception as e:
+            print(e)
         finally:
             cursor.close()
             conn.close()
@@ -31,7 +36,8 @@ class InstrumentsDAO(object):
             conn = mysql.connector.connect(host=self.host,
                                            database=self.database,
                                            user=self.user,
-                                           password=self.password)
+                                           password=self.password,
+                                           port=self.port)
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT "
@@ -71,7 +77,8 @@ class InstrumentsDAO(object):
             conn = mysql.connector.connect(host=self.host,
                                            database=self.database,
                                            user=self.user,
-                                           password=self.password)
+                                           password=self.password,
+                                           port=self.port)
             cursor = conn.cursor()
             cursor.execute(
                 "SELECT "
