@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route('/connection_check', methods=["POST"])
+@app.route('/connection_check', methods=["GET"])
 def connection_check():
     """ Connect to MySQL database """
     try:
