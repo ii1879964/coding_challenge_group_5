@@ -104,7 +104,8 @@ def get_instruments_ending_position():
 @app.route('/balance/realized', methods=['GET'])
 def get_realized_profit_loss():
     try:
-        BalanceDAO.get_realized_balance()
+        result = BalanceDAO.get_realized_balance()
+        return make_response(jsonify(result), 200)
     except Error as e:
         data = {'message': e, 'code': 'Internal Server Error'}
         return make_response(jsonify(data), 500)
@@ -113,7 +114,8 @@ def get_realized_profit_loss():
 @app.route('/balance/effective', methods=['GET'])
 def get_effective_profit_loss():
     try:
-        BalanceDAO.get_effective_balance()
+        result = BalanceDAO.get_effective_balance()
+        return make_response(jsonify(result), 200)
     except Error as e:
         data = {'message': 'Not connected', 'code': 'Internal Server Error'}
         return make_response(jsonify(data), 500)
