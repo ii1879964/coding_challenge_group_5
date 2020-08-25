@@ -2,50 +2,51 @@ import mysql
 
 
 class BalanceDAO(object):
-    def __init__(self,
-                 host='localhost',
-                 database='db_grad_cs_1917',
-                 user='root',
-                 password='ppp'):
-        self.host = host
-        self.database = database
-        self.user = user
-        self.password = password
 
-    def get_realized_balance(self):
-        try:
-            conn = mysql.connector.connect(host=self.host,
-                                           database=self.database,
-                                           user=self.user,
-                                           password=self.password)
-            cursor = conn.cursor()
-            # TODO: while persisiting - keep track of realized profit/loss
-        finally:
-            cursor.close()
-            conn.close()
+    balance_per_instrument_name = {}
+    quantity_of_shares = {}
+    current_price = {}
 
-    def get_effective_balance(self):
-        try:
-            conn = mysql.connector.connect(host=self.host,
-                                           database=self.database,
-                                           user=self.user,
-                                           password=self.password)
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT "
-                "deal_time,"
-                "instrument_name,"
-                "counterparty_name,"
-                "deal_type,"
-                "deal_quantity,"
-                "deal_price "
-                "FROM "
-                "deal join "
-                "instrument  on deal.deal_instrument_id=instrument.instrument_id join "
-                "counterparty on deal.deal_counterparty_id=counterparty.counterparty_id "
-                "WHERE "
-                f"instrument_name='{instrument}'")
-            return [dict(zip(cursor.column_names, row)) for row in cursor.fetchall()]
-        finally:
-            cursor.close()
-            conn.close()
+    @staticmethod
+    def get_realized_balance():
+        result = {"profit":0,"loss":0,"sum":0}
+        for v in BalanceDAO.balance_per_instrument_name.values():
+            if v >= 0:
+                result['profit'] += v
+            else:
+                result['loss'] -= v
+        result['sum'] = result['profit'] - result['loss']
+        return result
+
+    @staticmethod
+    def get_effective_balance():
+        result = {"profit": 0, "loss": 0, "sum": 0}
+        for instrument, balance in BalanceDAO.balance_per_instrument_name.items():
+            if balance >= 0:
+                result['profit'] += balance
+            else:
+                result['loss'] -= balance
+            if BalanceDAO.quantity_of_shares[instrument] >= 0:
+                result['profit'] += BalanceDAO.current_price[instrument] * BalanceDAO.quantity_of_shares[instrument]
+            else:
+                result['loss'] -= BalanceDAO.current_price[instrument] * BalanceDAO.quantity_of_shares[instrument]
+        result['sum'] = result['profit'] - result['loss']
+        return result
+
+    @staticmethod
+    def recount_profit_loss(new_deal):
+        if not new_deal['instrumentName'] in BalanceDAO.quantity_of_shares:
+            BalanceDAO.quantity_of_shares[new_deal['instrumentName']] = 0
+        if not new_deal['instrumentName'] in BalanceDAO.balance_per_instrument_name:
+            BalanceDAO.balance_per_instrument_name[new_deal['instrumentName']] = 0
+
+        if (new_deal['type'] == 'B'):
+            BalanceDAO.balance_per_instrument_name[new_deal['instrumentName']] -= new_deal['quantity'] * new_deal['price']
+            BalanceDAO.quantity_of_shares[new_deal['instrumentName']] += new_deal['quantity']
+            BalanceDAO.current_price[new_deal['instrumentName']] = new_deal['price']
+        else:
+            BalanceDAO.balance_per_instrument_name[new_deal['instrumentName']] += new_deal['quantity'] * new_deal['price']
+            BalanceDAO.quantity_of_shares[new_deal['instrumentName']] -= new_deal['quantity']
+            BalanceDAO.current_price[new_deal['instrumentName']] = new_deal['price']
+
+
