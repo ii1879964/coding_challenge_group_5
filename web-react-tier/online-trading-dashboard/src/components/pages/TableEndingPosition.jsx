@@ -2,6 +2,18 @@ import React from 'react';
 import { Table } from 'reactstrap';
 
 const Example = (props) => {
+  const { array } = props;
+
+  const table = array ? array.map((row, index) => {
+    const {name, prices}= row;
+    return <tr key={name+index+"position"}>
+            <th scope="row">{index+1}</th>
+            <td>{name}</td>
+            <td>{prices.buy}</td>
+            <td>{prices.sell}</td>
+          </tr>
+  }) : null;
+
   return (
     <>
     <h2>My Ending Position</h2>
@@ -15,77 +27,7 @@ const Example = (props) => {
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">1</th>
-          <td>Astronomica</td>
-          <td>Table cell</td>
-          <td>Table cell</td>
-        </tr>
-        <tr>
-          <th scope="row">2</th>
-          <td>Borealis </td>
-          <td>Table cell</td>
-          <td>Table cell</td>
-        </tr>
-        <tr>
-          <th scope="row">3</th>
-          <td>Celestial</td>
-          <td>Table cell</td>
-          <td>Table cell</td>
-        </tr>
-        <tr>
-          <th scope="row">4</th>
-          <td>Deuteronic</td>
-          <td>Table cell</td>
-          <td>Table cell</td>
-        </tr>
-        <tr>
-          <th scope="row">5</th>
-          <td>Eclipse</td>
-          <td>Table cell</td>
-          <td>Table cell</td>
-        </tr>
-        <tr>
-          <th scope="row">6</th>
-          <td>Floral</td>
-          <td>Table cell</td>
-          <td>Table cell</td>
-        </tr>
-        <tr>
-          <th scope="row">7</th>
-          <td>Galactia</td>
-          <td>Table cell</td>
-          <td>Table cell</td>
-        </tr>
-        <tr>
-          <th scope="row">8</th>
-          <td>Heliosphere</td>
-          <td>Table cell</td>
-          <td>Table cell</td>
-        </tr>
-        <tr>
-          <th scope="row">9</th>
-          <td>Interstella</td>
-          <td>Table cell</td>
-          <td>Table cell</td>
-        </tr>
-        <tr>
-          <th scope="row">10</th>
-          <td>Jupiter</td>
-          <td>Table cell</td>
-          <td>Table cell</td>
-        </tr>        <tr>
-          <th scope="row">11</th>
-          <td>Koronis</td>
-          <td>Table cell</td>
-          <td>Table cell</td>
-        </tr>
-         <tr>
-          <th scope="row">12</th>
-          <td>Lunatic</td>
-          <td>Table cell</td>
-          <td>Table cell</td>
-        </tr>
+        {table}
       </tbody>
     </Table>
     </>

@@ -6,7 +6,7 @@ const api = axios.create({
  
 export default class ConnectionService {
     connectionCheck = async () => {
-        const res = await api.post("/connection_check", {})
+        const res = await api.get("/connection_check", {})
             .then(response => {
                 if(response.status !== 200) {
                     throw new Error(`Couldn't connect to database`);
@@ -20,8 +20,10 @@ export default class ConnectionService {
         const res = await api.post("/login_check", {
             login: login,
             password: password
-        }).then(response => response);
-        return res.status;
+        }).then(response => {
+            return response.status;
+        });
+        return res;
     }
  
     getInstruments = async () => {

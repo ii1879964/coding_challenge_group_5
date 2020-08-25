@@ -19,24 +19,26 @@ export default class Login extends Component {
     
     handleSubmit(event) {
         const {UserLogin, UserPassword} = this.state;
-        try{
-            this.connectionService.loginCheck(UserLogin, UserPassword);
-            this.props.handleLogin({
-                user: {
-                    login: UserLogin,
-                    password: UserPassword
-                }
-            });
-            this.setState({
-                LoginErrors: ""
-            });
-            this.props.history.push("/dashboard");
- 
-        } catch(error) {
-            this.setState({
-                LoginErrors: "Wrong login/password"
-            });
-        }
+        this.connectionService.loginCheck(UserLogin, UserPassword).then(status => {
+            if(status === 200) {
+                
+                this.props.handleLogin({
+                    user: {
+                        login: UserLogin,
+                        password: UserPassword
+                    }
+                });
+                this.setState({
+                    LoginErrors: ""
+                });
+                this.props.history.push("/dashboard");
+    
+            } else {
+                this.setState({
+                    LoginErrors: "Wrong login/password"
+                });
+            }
+        });
         event.preventDefault();
     }
  
@@ -60,6 +62,7 @@ export default class Login extends Component {
                         <Input type="text" 
                             placeholder="Enter your login here" 
                             id="UserLogin"
+                            name="UserLogin"
                             value={this.state.login}
                             onChange={this.handleChange}
                             required       
@@ -72,6 +75,7 @@ export default class Login extends Component {
                         <Input type="password"
                             placeholder="Enter your password here" 
                             id="UserPassword"
+                            name="UserPassword"
                             value={this.state.password}
                             onChange={this.handleChange}
                             required       

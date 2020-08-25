@@ -14,12 +14,20 @@ export default class App extends Component {
       user: {}
     }
     this.handleLogin = this.handleLogin.bind(this);
+    this.handleLogout = this.handleLogout.bind(this);
   }
   
   handleLogin(user) {
     this.setState({
       loggedInStatus: true,
       user: user
+    });
+  }
+
+  handleLogout() {
+    this.setState({
+      loggedInStatus: false,
+      user: {}
     });
   }
 
@@ -52,6 +60,7 @@ export default class App extends Component {
                     <DashboardPage
                       {...props}
                       handleLogin={this.handleLogin}
+                      handleLogout={this.handleLogout}
                       loggedInStatus={loggedInStatus}
                     />
                   </>
