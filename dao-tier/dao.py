@@ -1,3 +1,5 @@
+import os
+
 import mysql.connector
 import json
 from flask import Flask, Blueprint, Response
@@ -15,9 +17,11 @@ app = Flask(__name__)
 # app.register_blueprint(sse, url_prefix='/stream')
 CORS(app)
 
-deals_dao = DealsDAO()
-probes_dao = ProbesDAO()
-instruments_dao = InstrumentsDAO()
+db_host = os.getenv('DB_HOST','localhost')
+deals_dao = DealsDAO(host=db_host)
+probes_dao = ProbesDAO(host=db_host)
+instruments_dao = InstrumentsDAO(host=db_host)
+balance_dao = BalanceDAO(host=db_host)
 
 
 @app.route('/connection_check', methods=["GET"])
@@ -127,7 +131,7 @@ def stream():
 
 def persist_data(nextId, next):
     try:
-        conn = mysql.connector.connect(host='localhost',
+        conn = mysql.connector.connect(host=db_host,
                                        database='db_grad_cs_1917',
                                        user='root',
                                        password='ppp')
@@ -144,7 +148,7 @@ def persist_data(nextId, next):
                             f"{next['quantity']})")
             conn.commit()
     except Error as e:
-        data = {'message': 'Not connected', 'code': 'Internal Server Error'}
+        data = {'message': e, 'code': 'Internal Server Error'}
         #return (jsonify(data), 500)
         print(e)
     finally:
@@ -159,7 +163,7 @@ def deal_generator(rdd, instrList):
         yield 'data:{}\n\n'.format(json.dumps(next))
 
 def bootapp():
-    app.run(port=8090, threaded=True, host=('localhost'))
+    app.run(port=8090, threaded=True, host=('0.0.0.0'))
 
 
 

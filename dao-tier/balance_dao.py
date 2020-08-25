@@ -6,6 +6,7 @@ class BalanceDAO(object):
     balance_per_instrument_name = {}
     quantity_of_shares = {}
     current_price = {}
+
     def get_realized_balance():
         return sum(BalanceDAO.balance_per_instrument_name.values())
 
