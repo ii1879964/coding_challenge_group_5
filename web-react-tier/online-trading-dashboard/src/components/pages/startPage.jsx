@@ -1,22 +1,34 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { Jumbotron, Container, Col, Button } from 'reactstrap';
+import Logo from "./logo.png";
 
 
-const StartPage = (props) => {
+export default class StartPage extends Component {
+    constructor(props) {
+        super(props);
+        this.handleClickLogIn = this.handleClickLogIn.bind(this);
+    }
+    handleClickLogIn(event) {
+        event.preventDefault();
+        this.props.history.push("/login");
+    }
+    render(){
     return (
      <div>
       <Jumbotron fluid>
        <Container fluid>
-        <h1 className="display-3"> Online Trading Platform </h1>
+        <h1 className="display-3"> Online Trading Dashboard </h1>
         <p className="lead">Build on Your Investments</p>
-        <Button color="secondary" size="sm">Log in</Button>
+        <p><Button onClick = {this.handleClickLogIn} color="primary">Log in</Button></p>
         <Col>
-         <img src="../../invest.png" alt='startImage' roundedCircle />
+         <img width="630"
+           height="350"
+           src={Logo} 
+           alt='Logo'/>
         </Col>
        </Container>      
       </Jumbotron>    
      </div>  
     );
 };
-
-export default StartPage;
+};
