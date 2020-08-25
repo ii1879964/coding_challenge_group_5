@@ -10,6 +10,7 @@ from probes_dao import ProbesDAO
 from instruments_dao import InstrumentsDAO
 from balance_dao import BalanceDAO
 
+
 app = Flask(__name__)
 # app.register_blueprint(sse, url_prefix='/stream')
 CORS(app)
@@ -103,7 +104,7 @@ def get_instruments_ending_position():
 @app.route('/balance/realized', methods=['GET'])
 def get_realized_profit_loss():
     try:
-        balance_dao.get_realized_balance()
+        BalanceDAO.get_realized_balance()
     except Error as e:
         data = {'message': e, 'code': 'Internal Server Error'}
         return make_response(jsonify(data), 500)
@@ -112,22 +113,10 @@ def get_realized_profit_loss():
 @app.route('/balance/effective', methods=['GET'])
 def get_effective_profit_loss():
     try:
-        conn = mysql.connector.connect(host='localhost',
-                                       database='db_grad_cs_1917',
-                                       user='root',
-                                       password='ppp')
-
-        if conn.is_connected():
-            cursor = conn.cursor()
-            # TODO: while persisiting - keep track of effective profit/loss
-
+        BalanceDAO.get_effective_balance()
     except Error as e:
         data = {'message': 'Not connected', 'code': 'Internal Server Error'}
         return make_response(jsonify(data), 500)
-
-    finally:
-        cursor.close()
-        conn.close()
 
 @app.route('/streamTest')
 def stream():
@@ -163,14 +152,9 @@ def persist_data(nextId, next):
 def deal_generator(rdd, instrList):
     while True:
         nextId, next = rdd.createRandomData(instrList)
+        BalanceDAO.recount_profit_loss(next)
         persist_data(nextId, next)
-        #print("Persisting {}".format(next))
-        # nonlocal instrList
-
         yield 'data:{}\n\n'.format(json.dumps(next))
-
-
-
 
 def bootapp():
     app.run(port=8090, threaded=True, host=('localhost'))
