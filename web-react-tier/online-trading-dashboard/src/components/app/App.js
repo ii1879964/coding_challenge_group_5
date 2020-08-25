@@ -30,7 +30,6 @@ export default class App extends Component {
     return (
       <div className="App">
         <Container>
-          <Header/>
         </Container>
         <BrowserRouter>
           <Switch>
@@ -50,11 +49,14 @@ export default class App extends Component {
                 exact
                 path={"/dashboard"}
                 render={props =>(
+                  <>
+                   <Header/>
                   <HistogramAverageBuySell
                     {...props}
                     handleLogin={this.handleLogin}
                     loggedInStatus={loggedInStatus}
                   />
+                  </>
                 )}
               />
               <Route
