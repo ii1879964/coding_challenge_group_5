@@ -4,6 +4,7 @@ import AlertDB from '../pages/AlertDB'
 import TableEndingPosition from '../pages/TableEndingPosition'
 import TableEffectiveReleasedProfit from '../pages/TableEffectiveReleasedProfit'
 import { Button } from 'reactstrap';
+import "./DashboardPage.css";
 
 export default class Dashboard extends Component {
     constructor(props) {
@@ -26,8 +27,10 @@ export default class Dashboard extends Component {
 
         return (
             <div>
-                <h1>Online Trading Dashboard</h1>
-                <p><Button onClick = {this.handleSubmit} color="primary">Log Out</Button></p>
+                <div className="header">
+                    <h1>Online Trading Dashboard</h1>
+                    <p><Button onClick = {this.handleSubmit} color="primary" className="logout-button">Log Out</Button></p>
+                </div>
                 {content}
                 <HistogramAverageBuySell />
                 <TableEndingPosition />

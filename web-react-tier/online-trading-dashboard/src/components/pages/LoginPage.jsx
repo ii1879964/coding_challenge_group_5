@@ -1,37 +1,46 @@
 import React, { Component } from 'react';
-import { Form, FormGroup, Col, Input, Label, Button } from 'reactstrap';
-//import AuthService from '../../services/authService';
-
+import { Form, FormGroup, Col, Input, Label, Button, Alert } from 'reactstrap';
+import ConnectionService from '../../services/connectionService';
+ 
 export default class Login extends Component {
-    //authService = new AuthService();
-
+    connectionService = new ConnectionService();
+ 
     constructor(props) {
         super(props);
         this.state = {
-            LoginEmail: "",
-            LoginPassword: "",
+            UserLogin: "",
+            UserPassword: "",
             LoginErrors: ""
         }
-
+ 
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleChange = this.handleChange.bind(this);
     }
     
     handleSubmit(event) {
-        const {loginEmail, loginPassword} = this.state;
-        //this.authService.login(loginEmail, loginPassword);
-        this.props.handleLogin({
-            user: {
-                email: loginEmail,
-                password: loginPassword
-            }
-        })
+        const {UserLogin, UserPassword} = this.state;
+        try{
+            this.connectionService.loginCheck(UserLogin, UserPassword);
+            this.props.handleLogin({
+                user: {
+                    login: UserLogin,
+                    password: UserPassword
+                }
+            });
+            this.setState({
+                LoginErrors: ""
+            });
+            this.props.history.push("/dashboard");
+ 
+        } catch(error) {
+            this.setState({
+                LoginErrors: "Wrong login/password"
+            });
+        }
         event.preventDefault();
-        this.props.history.push("/login");
     }
-
+ 
     handleChange(event) {
-        console.log("handle change", event);
         this.setState({
             [event.target.name]: event.target.value
         });
@@ -39,27 +48,30 @@ export default class Login extends Component {
     
     render() {
         const { loggedInStatus } = this.props;
-
+        const { LoginErrors } = this.state;
+ 
+        const errorContent = LoginErrors ? <Alert color="danger">{LoginErrors}</Alert> : null;
+ 
         const LoginForm = (
             <Form onSubmit={this.handleSubmit}>
                 <FormGroup row>
-                    <Label for="loginEmail" sm={1}>Email</Label>
+                    <Label for="UserLogin" sm={1}>login</Label>
                     <Col sm={3}>
-                        <Input type="email" 
-                            placeholder="Enter your email here" 
-                            id="loginEmail"
-                            value={this.state.email}
+                        <Input type="text" 
+                            placeholder="Enter your login here" 
+                            id="UserLogin"
+                            value={this.state.login}
                             onChange={this.handleChange}
                             required       
                         />
                     </Col>
                 </FormGroup>
                 <FormGroup row>
-                    <Label for="loginPassword" sm={1}>Password</Label>
+                    <Label for="UserPassword" sm={1}>Password</Label>
                     <Col sm={3}>
                         <Input type="password"
                             placeholder="Enter your password here" 
-                            id="loginPassword"
+                            id="UserPassword"
                             value={this.state.password}
                             onChange={this.handleChange}
                             required       
@@ -69,11 +81,12 @@ export default class Login extends Component {
                 <Button type="submit" color="primary">Log in</Button>
             </Form>
         );
-
+ 
         const content = loggedInStatus ? <h2>Your are logged in</h2> : LoginForm;
-
+ 
         return (
             <div>
+                {errorContent}
                 {content}
             </div>
         );
