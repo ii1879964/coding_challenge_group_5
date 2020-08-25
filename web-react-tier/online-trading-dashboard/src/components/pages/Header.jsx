@@ -6,7 +6,8 @@ const Example = (props) => {
       return (
         <div>
             <h1>Online Trading Dashboard</h1>
-            <p><Button color="primary">Log Out</Button></p>
+            <p><Button type="submit" color="primary">Log Out</Button></p>      
+
          </div>
       );
       }     

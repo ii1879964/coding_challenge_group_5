@@ -2,10 +2,9 @@ import React, { Component } from 'react';
 import './App.css';
 import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import { Container } from 'reactstrap';
-import Header from '../pages/Header'
 import StartPage from '../pages/startPage';
 import LoginPage from '../pages/LoginPage';
-import HistogramAverageBuySell from '../pages/HistogramAverageBuySell'
+import DashboardPage from '../pages/DashboardPage'
 
 export default class App extends Component {
   constructor(props) {
@@ -50,12 +49,11 @@ export default class App extends Component {
                 path={"/dashboard"}
                 render={props =>(
                   <>
-                   <Header/>
-                  <HistogramAverageBuySell
-                    {...props}
-                    handleLogin={this.handleLogin}
-                    loggedInStatus={loggedInStatus}
-                  />
+                    <DashboardPage
+                      {...props}
+                      handleLogin={this.handleLogin}
+                      loggedInStatus={loggedInStatus}
+                    />
                   </>
                 )}
               />
