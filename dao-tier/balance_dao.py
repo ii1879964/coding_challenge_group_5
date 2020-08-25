@@ -9,14 +9,29 @@ class BalanceDAO(object):
 
     @staticmethod
     def get_realized_balance():
-        return sum(BalanceDAO.balance_per_instrument_name.values())
+        result = {"profit":0,"loss":0,"sum":0}
+        for v in BalanceDAO.balance_per_instrument_name.values():
+            if v >= 0:
+                result['profit'] += v
+            else:
+                result['loss'] -= v
+        result['sum'] = result['profit'] - result['loss']
+        return result
 
     @staticmethod
     def get_effective_balance():
-        effective_balance = 0
+        result = {"profit": 0, "loss": 0, "sum": 0}
         for instrument, balance in BalanceDAO.balance_per_instrument_name.items():
-            effective_balance = effective_balance + balance + BalanceDAO.current_price[instrument] * BalanceDAO.quantity_of_shares[instrument]
-        return effective_balance
+            if balance >= 0:
+                result['profit'] += balance
+            else:
+                result['loss'] -= balance
+            if BalanceDAO.quantity_of_shares[instrument] >= 0:
+                result['profit'] += BalanceDAO.current_price[instrument] * BalanceDAO.quantity_of_shares[instrument]
+            else:
+                result['loss'] -= BalanceDAO.current_price[instrument] * BalanceDAO.quantity_of_shares[instrument]
+        result['sum'] = result['profit'] - result['loss']
+        return result
 
     @staticmethod
     def recount_profit_loss(new_deal):
