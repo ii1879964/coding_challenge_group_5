@@ -13,12 +13,11 @@ EPOCH = datetime.now() - timedelta(days=1)
 
 
 class RandomDealData:
-    def __init__(self):
-        self.dealId = 21000
-        self.instrumentList = []
-        self.createInstrumentList()
+    dealId = 21000
+    instrumentList = []
 
-    def createInstrumentList(self):
+    @classmethod
+    def createInstrumentList(cls):
         f = open('initialRandomValues.txt', 'r')
         instrumentId = 1000
         for instrumentName in instruments:
@@ -30,17 +29,19 @@ class RandomDealData:
             variance = (abs(hashedValue) % 1000) / 100.0
             variance = 0 - variance if isNegative else variance
             instrument = Instrument(instrumentId, instrumentName, basePrice, drift, variance)
-            self.instrumentList.append(instrument)
+            cls.instrumentList.append(instrument)
             instrumentId += 1
 
-    def createRandomData(self):
+
+    @classmethod
+    def createRandomData(cls):
         time.sleep(random.uniform(1, 30) / 100)
-        instrument = self.instrumentList[numpy.random.randint(0, len(self.instrumentList))]
+        instrument = cls.instrumentList[numpy.random.randint(0, len(cls.instrumentList))]
         cpty = counterparties[numpy.random.randint(0, len(counterparties))]
         type = 'B' if numpy.random.choice([True, False]) else 'S'
         quantity = int(numpy.power(1001, numpy.random.random()))
         dealTime = datetime.now() - timedelta(days=1)
-        self.dealId += 1
+        cls.dealId += 1
         deal = {
             'instrumentName': instrument.name,
             'cpty': cpty,
@@ -49,9 +50,10 @@ class RandomDealData:
             'quantity': quantity,
             'time': dealTime.strftime("%d-%b-%Y (%H:%M:%S.%f)"),
         }
-        return self.dealId, deal
+        return cls.dealId, deal
 
-    def deal_generator(self):
+    @classmethod
+    def deal_generator(cls):
         while True:
-            nextId, next = self.createRandomData()
+            nextId, next = cls.createRandomData()
             yield nextId, next

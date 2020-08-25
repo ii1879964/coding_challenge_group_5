@@ -6,7 +6,7 @@ from flask import Flask, Blueprint, Response
 from flask import jsonify, make_response, request
 from flask_cors import CORS
 from mysql.connector import Error
-from RandomDealData import *
+from RandomDealData import RandomDealData
 from deals_dao import DealsDAO
 from probes_dao import ProbesDAO
 from instruments_dao import InstrumentsDAO
@@ -22,8 +22,6 @@ db_host = os.getenv('DB_HOST','localhost')
 deals_dao = DealsDAO(host=db_host)
 probes_dao = ProbesDAO(host=db_host)
 instruments_dao = InstrumentsDAO(host=db_host)
-
-rdd = RandomDealData()
 
 
 @app.route('/connection_check', methods=["GET"])
@@ -77,7 +75,7 @@ def query_persisted_deals(instrument):
 def get_real_time_deals():
 
     def deal_generator():
-        for nextId, next in rdd.deal_generator():
+        for nextId, next in RandomDealData.deal_generator():
             BalanceDAO.recount_profit_loss(next)
             deals_dao.persist_data(nextId, next)
             yield 'data:{}\n\n'.format(json.dumps(next))
@@ -136,4 +134,5 @@ def bootapp():
 
 
 if __name__ == '__main__':
+    RandomDealData.createInstrumentList()
     bootapp()
