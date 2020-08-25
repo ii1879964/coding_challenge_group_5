@@ -14,12 +14,11 @@ Examples:
 
 - connection check:
 
-`curl localhost:8090/connection_check -X post`
+`curl localhost:8090/connection_check -X GET`
 
 - login check with login and password parameters:
 
-`curl -d "{\"login\":\"debs\", \"password\":\"gradprog5016@02\"}" -H "Content-Type: application/json
-" -X post localhost:8090/login_check`
+`curl -d "{\"login\":\"debs\", \"password\":\"gradprog2016@02\"}" -H "Content-Type: application/json" -X post localhost:8090/login_check`
 
 - view all deals history:
 
