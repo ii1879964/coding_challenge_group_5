@@ -49,11 +49,11 @@ export default class App extends Component {
                 path={"/dashboard"}
                 render={props =>(
                   <>
-                  <DashboardPage
-                    {...props}
-                    handleLogin={this.handleLogin}
-                    loggedInStatus={loggedInStatus}
-                  />
+                    <DashboardPage
+                      {...props}
+                      handleLogin={this.handleLogin}
+                      loggedInStatus={loggedInStatus}
+                    />
                   </>
                 )}
               />

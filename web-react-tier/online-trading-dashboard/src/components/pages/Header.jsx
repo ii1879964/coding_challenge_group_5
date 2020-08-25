@@ -7,6 +7,7 @@ const Example = (props) => {
         <div>
             <h1>Online Trading Dashboard</h1>
             <p><Button type="submit" color="primary">Log Out</Button></p>      
+
          </div>
       );
       }     
